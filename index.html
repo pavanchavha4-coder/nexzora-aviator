@@ -1,0 +1,111 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXZORA AVIATOR</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#090909;color:white;font-family:Arial,sans-serif}
+header{padding:18px;text-align:center;background:#160909;border-bottom:1px solid #e32636}
+.logo{font-size:25px;font-weight:900;color:#ff303d;letter-spacing:2px}
+header small{color:#aaa}
+main{max-width:600px;margin:auto;padding:15px}
+.panel{background:#171717;border:1px solid #393939;border-radius:14px;padding:16px;margin-bottom:15px}
+.balance{display:flex;justify-content:space-between;align-items:center}
+.coins{color:#ffd45c;font-size:21px;font-weight:bold}
+.game{height:280px;position:relative;overflow:hidden;border-radius:12px;background:radial-gradient(ellipse at bottom,#49100d,#120809 65%,#080808)}
+.multiplier{position:absolute;top:40%;width:100%;text-align:center;font-size:46px;font-weight:bold}
+.status{position:absolute;top:12px;width:100%;text-align:center;color:#aaa}
+.plane{position:absolute;bottom:55px;left:12%;font-size:48px;transition:transform .2s}
+button{border:0;padding:14px;border-radius:9px;font-size:16px;font-weight:bold;cursor:pointer}
+input{background:#080808;border:1px solid #444;color:white;padding:13px;border-radius:8px;width:100%;font-size:17px}
+.bet{background:#e32636;color:white;flex:1}
+.cash{background:#168b4b;color:white;flex:1}
+.controls{display:flex;gap:10px;margin-top:12px}
+.history{display:flex;gap:8px;flex-wrap:wrap}
+.history span{background:#292929;padding:8px 12px;border-radius:20px;color:#ff7777}
+footer{text-align:center;color:#888;padding:20px;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">NEXZORA</div>
+<small>AVIATOR • DEMO GAME</small>
+</header>
+<main>
+<div class="panel balance">
+<div>DEMO COIN BALANCE</div>
+<div class="coins" id="coins">10,000</div>
+</div>
+<div class="game">
+<div class="status" id="status">READY TO PLAY</div>
+<div class="multiplier" id="multiplier">1.00x</div>
+<div class="plane" id="plane">✈️</div>
+</div>
+<div class="panel">
+<label>Bet amount (demo coins)</label>
+<input id="amount" type="number" min="1" max="1000" value="100">
+<div class="controls">
+<button class="bet" id="play" onclick="startGame()">BET / PLAY</button>
+<button class="cash" id="cash" onclick="cashOut()" disabled>CASH OUT</button>
+</div>
+<p id="message">Practice game – no real money.</p>
+</div>
+<div class="panel">
+<b>RECENT DEMO RESULTS</b>
+<div class="history" id="history"><span>Waiting...</span></div>
+</div>
+</main>
+<footer>NEXZORA AVIATOR • FREE PRACTICE VERSION<br>Demo coins have no cash value.</footer>
+<script>
+let coins=10000,active=false,cashed=false,m=1,timer;
+const $=id=>document.getElementById(id);
+function startGame(){
+if(active)return;
+let amount=Number($('amount').value);
+if(!Number.isInteger(amount)||amount<1||amount>1000||amount>coins){
+$('message').textContent='Invalid demo coin amount';return;
+}
+coins-=amount;
+$('coins').textContent=coins.toLocaleString();
+active=true;cashed=false;m=1;
+$('play').disabled=true;
+$('cash').disabled=false;
+$('status').textContent='PLANE FLYING';
+$('message').textContent='Your demo bet: '+amount+' coins';
+$('plane').style.transform='translate(0,0)';
+let crashAt=1.5+Math.random()*5;
+timer=setInterval(()=>{
+m+=.03;
+$('multiplier').textContent=m.toFixed(2)+'x';
+$('plane').style.transform=`translate(${Math.min(m*24,300)}px,${-Math.min(m*18,160)}px)`;
+if(m>=crashAt){
+clearInterval(timer);active=false;
+$('status').textContent='ROUND CRASHED';
+$('message').textContent=cashed?'Cash out successful.':'Demo bet lost.';
+$('cash').disabled=true;$('play').disabled=false;
+addHistory(m.toFixed(2)+'x');
+}
+},100);
+}
+function cashOut(){
+if(!active||cashed)return;
+cashed=true;
+let amount=Number($('amount').value);
+let win=Math.floor(amount*m);
+coins+=win;
+$('coins').textContent=coins.toLocaleString();
+$('message').textContent='Cashed out at '+m.toFixed(2)+'x. Won '+win+' demo coins.';
+$('cash').disabled=true;
+}
+function addHistory(value){
+let el=document.createElement('span');el.textContent=value;
+$('history').prepend(el);
+if($('history').children.length>8)$('history').lastChild.remove();
+}
+</script>
+</body>
+  </html>
+  

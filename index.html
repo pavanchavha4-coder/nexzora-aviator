@@ -3,81 +3,129 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NEXZORA AVIATOR</title>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#090909;color:white;font-family:Arial}
-header{text-align:center;padding:20px;background:#190808;border-bottom:1px solid #e32636}
-.logo{font-size:27px;color:#ff303d;font-weight:900;letter-spacing:3px}
-main{max-width:520px;margin:auto;padding:15px}
-.panel{background:#191919;border:1px solid #393939;border-radius:13px;padding:17px;margin-bottom:15px}
-input{width:100%;padding:14px;margin:8px 0;background:#090909;border:1px solid #555;border-radius:8px;color:white}
-button{padding:13px;border:0;border-radius:8px;background:#e32636;color:white;font-weight:bold;width:100%;margin:5px 0}
-button:disabled{opacity:.5}
-.secondary{background:#333}
-#game{display:none}
-.balance{color:#ffd45c;font-size:23px;font-weight:bold}
-.game{height:260px;background:radial-gradient(ellipse at bottom,#50100e,#100808);border-radius:12px;position:relative;overflow:hidden}
-#multiplier{position:absolute;top:40%;width:100%;text-align:center;font-size:45px;font-weight:bold}
-#plane{position:absolute;bottom:35px;left:10%;font-size:40px}
-#status{text-align:center;padding:12px;color:#ff9999}
-.history span{display:inline-block;background:#333;padding:8px;margin:4px;border-radius:15px}
-footer{text-align:center;color:#888;padding:20px;font-size:12px}
+body{
+ margin:0;background:#080808;color:white;
+ font-family:Arial,sans-serif;text-align:center;
+}
+header{
+ padding:20px;background:#111;
+ border-bottom:1px solid #a90000;
+}
+.logo{font-size:27px;font-weight:900;color:#ff2020;letter-spacing:2px}
+.logo span{color:white}
+.small{color:#aaa;font-size:12px;margin-top:5px}
+.container{max-width:480px;margin:auto;padding:15px}
+.panel{
+ background:#151515;border:1px solid #333;
+ border-radius:14px;padding:18px;margin:14px 0;
+}
+h2{color:#ff2525;margin-top:5px}
+input{
+ width:100%;padding:14px;margin:7px 0;
+ background:#080808;border:1px solid #444;
+ border-radius:8px;color:white;font-size:16px;
+}
+button{
+ width:100%;padding:14px;margin:6px 0;
+ border:0;border-radius:8px;
+ font-size:16px;font-weight:bold;cursor:pointer;
+}
+.red{background:#d60000;color:white}
+.dark{background:#292929;color:white}
+.green{background:#176b36;color:white}
+button:disabled{opacity:.45}
+#message{color:#ff7777;font-size:14px;min-height:20px}
+#game{
+ height:230px;background:
+ radial-gradient(circle at center,#301010,#090909 70%);
+ border:1px solid #5b1717;border-radius:12px;
+ position:relative;overflow:hidden;
+ display:flex;align-items:center;justify-content:center;
+}
+#multiplier{font-size:43px;font-weight:bold;color:#ff2929}
+#plane{
+ position:absolute;left:15px;bottom:15px;
+ font-size:35px;display:none;
+}
+#status{color:#aaa;margin:10px}
+.balance{font-size:26px;color:#ff3030;font-weight:bold}
+.history-item{
+ display:inline-block;background:#292929;
+ padding:9px 12px;border-radius:7px;margin:4px;
+ color:#ff5555;font-weight:bold;
+}
+.note{font-size:11px;color:#888;line-height:1.5}
 </style>
 </head>
+
 <body>
+
 <header>
-<div class="logo">NEXZORA</div>
-<small>AVIATOR • FREE DEMO</small>
+ <div class="logo">NEXZORA <span>AVIATOR</span></div>
+ <div class="small">FREE DEMO GAME</div>
 </header>
 
-<main>
-<section id="auth" class="panel">
-<h2>Player Login</h2>
-<input id="email" type="email" placeholder="Enter email">
-<input id="password" type="password" placeholder="Enter password">
-<button onclick="register()">CREATE ACCOUNT</button>
-<button class="secondary" onclick="login()">LOGIN</button>
-<p id="authMessage">Create your demo player account.</p>
-</section>
+<div class="container">
 
-<section id="game">
-<div class="panel">
-Welcome, <b id="playerEmail"></b>
-<button class="secondary" onclick="logout()">LOG OUT</button>
-Demo Coin Balance:
-<div class="balance" id="coins">10,000</div>
+<!-- LOGIN -->
+<div class="panel" id="auth">
+ <h2>PLAYER LOGIN</h2>
+ <input id="email" type="email" placeholder="Enter Email">
+ <input id="password" type="password" placeholder="Enter Password">
+ <button class="red" id="loginBtn">LOGIN</button>
+ <button class="dark" id="registerBtn">CREATE ACCOUNT</button>
+ <div id="message"></div>
 </div>
 
-<div class="game">
-<div id="status">READY TO PLAY</div>
-<div id="multiplier">1.00x</div>
-<div id="plane">✈️</div>
+<!-- GAME -->
+<div id="gameArea" style="display:none">
+
+ <div class="panel">
+  <div id="playerEmail" class="small"></div>
+  <button class="dark" id="logoutBtn">LOGOUT</button>
+  <div class="small">YOUR DEMO BALANCE</div>
+  <div class="balance" id="balance">10,000</div>
+ </div>
+
+ <div id="game">
+  <div>
+   <div id="multiplier">1.00x</div>
+   <div id="status">READY TO PLAY</div>
+  </div>
+  <div id="plane">✈️</div>
+ </div>
+
+ <div class="panel">
+  <input id="betAmount" type="number" min="10"
+   step="10" value="100" placeholder="Demo Bet Amount">
+
+  <button class="red" id="playBtn">START GAME</button>
+  <button class="green" id="cashBtn" disabled>DEMO CASH OUT</button>
+ </div>
+
+ <div class="panel">
+  <h2>RECENT RESULTS</h2>
+  <div id="history">No games yet</div>
+ </div>
+
+ <div class="panel">
+  <div class="note">
+   NEXZORA AVIATOR is a free-to-play demonstration.
+   Coins are virtual only and have no cash value.
+   No deposits, withdrawals or real-money prizes.
+  </div>
+ </div>
+
 </div>
-
-<div class="panel">
-<label>Demo bet amount</label>
-<input id="amount" type="number" value="100" min="1" max="1000">
-<button id="play" onclick="startGame()">BET / PLAY</button>
-<button id="cash" onclick="cashOut()" disabled style="background:#168b4b">CASH OUT</button>
-<p id="message">Practice only. No real money.</p>
 </div>
-
-<div class="panel">
-<b>RECENT DEMO RESULTS</b>
-<div class="history" id="history">No games yet</div>
-</div>
-</section>
-</main>
-
-<footer>
-NEXZORA AVIATOR • DEMO ONLY<br>
-No deposits, withdrawals or cash prizes.
-</footer>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 
 <script>
 const firebaseConfig = {
@@ -91,82 +139,181 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
+const auth = firebase.auth();
 
-function register(){
- const email=document.getElementById('email').value.trim();
- const password=document.getElementById('password').value;
- if(!email||password.length<6){
-  authMessage.textContent="Enter email and password (minimum 6 characters).";
+const $ = id => document.getElementById(id);
+
+let balance = 10000;
+let currentMultiplier = 1;
+let crashPoint = 0;
+let gameRunning = false;
+let gameTimer = null;
+let historyList = [];
+
+function showMessage(text){
+ $("message").textContent = text;
+}
+
+function updateBalance(){
+ $("balance").textContent = balance.toLocaleString("en-IN");
+}
+
+function showHistory(value){
+ historyList.unshift(value.toFixed(2) + "x");
+ historyList = historyList.slice(0,8);
+ $("history").innerHTML = "";
+ historyList.forEach(item=>{
+  const span = document.createElement("span");
+  span.className = "history-item";
+  span.textContent = item;
+  $("history").appendChild(span);
+ });
+}
+
+$("registerBtn").addEventListener("click", async ()=>{
+ const email = $("email").value.trim();
+ const password = $("password").value;
+
+ if(!email || password.length < 6){
+  showMessage("Email aur kam se kam 6 character password dalo.");
   return;
  }
- auth.createUserWithEmailAndPassword(email,password)
- .catch(e=>authMessage.textContent=e.message);
-}
 
-function login(){
- const email=document.getElementById('email').value.trim();
- const password=document.getElementById('password').value;
- auth.signInWithEmailAndPassword(email,password)
- .catch(e=>authMessage.textContent=e.message);
-}
-
-function logout(){auth.signOut();}
-
-auth.onAuthStateChanged(user=>{
- auth.style.display=user?'none':'block';
- document.getElementById('game').style.display=user?'block':'none';
- if(user)playerEmail.textContent=user.email;
+ try{
+  await auth.createUserWithEmailAndPassword(email,password);
+  showMessage("Account created successfully!");
+ }catch(error){
+  showMessage(error.message);
+ }
 });
 
-let coins=10000,active=false,cashed=false,m=1,timer;
+$("loginBtn").addEventListener("click", async ()=>{
+ const email = $("email").value.trim();
+ const password = $("password").value;
+
+ if(!email || !password){
+  showMessage("Email aur password dalo.");
+  return;
+ }
+
+ try{
+  await auth.signInWithEmailAndPassword(email,password);
+ }catch(error){
+  showMessage(error.message);
+ }
+});
+
+$("logoutBtn").addEventListener("click", async ()=>{
+ stopGame();
+ await auth.signOut();
+});
+
+auth.onAuthStateChanged(user=>{
+ if(user){
+  $("auth").style.display = "none";
+  $("gameArea").style.display = "block";
+  $("playerEmail").textContent = user.email || "Player";
+  balance = 10000;
+  updateBalance();
+ }else{
+  $("auth").style.display = "block";
+  $("gameArea").style.display = "none";
+  showMessage("");
+  stopGame();
+ }
+});
+
+function stopGame(){
+ clearInterval(gameTimer);
+ gameRunning = false;
+ $("playBtn").disabled = false;
+ $("cashBtn").disabled = true;
+ $("plane").style.display = "none";
+}
 
 function startGame(){
- if(active)return;
- const amount=Number(document.getElementById('amount').value);
- if(!Number.isInteger(amount)||amount<1||amount>1000||amount>coins){
-  message.textContent="Invalid demo coin amount";return;
+ if(gameRunning) return;
+
+ const bet = Number($("betAmount").value);
+
+ if(!Number.isFinite(bet) || bet < 10){
+  $("status").textContent = "Minimum demo bet is 10 coins";
+  return;
  }
- coins-=amount;
- document.getElementById('coins').textContent=coins.toLocaleString();
- active=true;cashed=false;m=1;
- play.disabled=true;cash.disabled=false;
- status.textContent="PLANE FLYING";
- message.textContent="Demo bet: "+amount+" coins";
- plane.style.transform="translate(0,0)";
- const crashAt=1.5+Math.random()*5;
- timer=setInterval(()=>{
-  m+=.03;
-  multiplier.textContent=m.toFixed(2)+"x";
-  plane.style.transform=`translate(${Math.min(m*24,300)}px,${-Math.min(m*18,160)}px)`;
-  if(m>=crashAt){
-   clearInterval(timer);active=false;
-   status.textContent="ROUND CRASHED";
-   message.textContent=cashed?"Demo cash out successful.":"Demo bet lost.";
-   cash.disabled=true;play.disabled=false;
-   addHistory(m.toFixed(2)+"x");
+
+ if(bet > balance){
+  $("status").textContent = "Not enough demo coins";
+  return;
+ }
+
+ balance -= bet;
+ updateBalance();
+
+ gameRunning = true;
+ currentMultiplier = 1;
+ crashPoint = Number((1.05 + Math.random()*5.95).toFixed(2));
+
+ $("multiplier").textContent = "1.00x";
+ $("status").textContent = "FLYING...";
+ $("plane").style.display = "block";
+ $("playBtn").disabled = true;
+ $("cashBtn").disabled = false;
+
+ const startTime = Date.now();
+
+ gameTimer = setInterval(()=>{
+  const elapsed = (Date.now()-startTime)/1000;
+  currentMultiplier = 1 + elapsed*0.35 + elapsed*elapsed*0.035;
+
+  $("multiplier").textContent = currentMultiplier.toFixed(2)+"x";
+  $("plane").style.left = Math.min(78,15+elapsed*8)+"%";
+  $("plane").style.bottom = Math.min(75,15+elapsed*5)+"%";
+
+  if(currentMultiplier >= crashPoint){
+   crashGame();
   }
  },100);
 }
 
-function cashOut(){
- if(!active||cashed)return;
- cashed=true;
- const amount=Number(document.getElementById('amount').value);
- const win=Math.floor(amount*m);
- coins+=win;
- document.getElementById('coins').textContent=coins.toLocaleString();
- message.textContent="Demo cash out at "+m.toFixed(2)+"x. Won "+win+" coins.";
- cash.disabled=true;
+function crashGame(){
+ if(!gameRunning) return;
+
+ clearInterval(gameTimer);
+ gameRunning = false;
+
+ $("multiplier").textContent = crashPoint.toFixed(2)+"x";
+ $("status").textContent = "CRASHED!";
+ $("cashBtn").disabled = true;
+ $("playBtn").disabled = false;
+
+ showHistory(crashPoint);
 }
 
-function addHistory(value){
- if(history.textContent==="No games yet")history.textContent="";
- const item=document.createElement("span");
- item.textContent=value;
- history.prepend(item);
+function cashOut(){
+ if(!gameRunning) return;
+
+ clearInterval(gameTimer);
+ gameRunning = false;
+
+ const bet = Number($("betAmount").value);
+ const winnings = Math.floor(bet*currentMultiplier);
+
+ balance += winnings;
+ updateBalance();
+
+ $("status").textContent =
+  "DEMO CASH OUT: +" + winnings.toLocaleString("en-IN") + " coins";
+
+ $("cashBtn").disabled = true;
+ $("playBtn").disabled = false;
+
+ showHistory(currentMultiplier);
 }
+
+$("playBtn").addEventListener("click",startGame);
+$("cashBtn").addEventListener("click",cashOut);
 </script>
+
 </body>
-  </html>
-  
+ </html>
+ 
